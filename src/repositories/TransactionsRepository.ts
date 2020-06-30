@@ -16,6 +16,7 @@ class TransactionsRepository extends Repository<Transaction> {
     const income = this.reduceValues(transactions, 'income');
     const outcome = this.reduceValues(transactions, 'outcome');
     const total = income - outcome;
+
     const balance = {
       income,
       outcome,
@@ -29,7 +30,7 @@ class TransactionsRepository extends Repository<Transaction> {
     return transactions
       .filter(x => x.type === type)
       .reduce((accumulated, actual) => {
-        accumulated += actual.value;
+        accumulated += Number(actual.value);
         return accumulated;
       }, 0);
   }
