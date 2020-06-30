@@ -19,10 +19,12 @@ export default class CreateCategory1593507987483 implements MigrationInterface {
           {
             name: 'created_at',
             type: 'timestamp with time zone',
+            default: 'now()',
           },
           {
             name: 'updated_at',
             type: 'timestamp with time zone',
+            default: 'now()',
           },
         ],
       }),

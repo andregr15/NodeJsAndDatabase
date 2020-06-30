@@ -38,10 +38,12 @@ export default class CreateTransaction1593508605236
           {
             name: 'created_at',
             type: 'timestamp with time zone',
+            default: 'now()',
           },
           {
             name: 'updated_at',
             type: 'timestamp with time zone',
+            default: 'now()',
           },
         ],
       }),
@@ -50,7 +52,6 @@ export default class CreateTransaction1593508605236
     await queryRunner.createForeignKey(
       'transactions',
       new TableForeignKey({
-        name: 'TransactionsCategory',
         columnNames: ['category_id'],
         referencedTableName: 'categories',
         referencedColumnNames: ['id'],
@@ -61,7 +62,7 @@ export default class CreateTransaction1593508605236
   }
 
   public async down(queryRunner: QueryRunner): Promise<void> {
-    queryRunner.dropForeignKey('TransactionsCategory');
+    // queryRunner.dropForeignKey('transactions', 'TransactionsCategory');
     queryRunner.dropTable('transactions');
   }
 }
