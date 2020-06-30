@@ -7,7 +7,7 @@ import Category from '../models/Category';
 
 interface Request {
   title: string;
-  type: 'income' | 'outcome';
+  type: string;
   value: number;
   category: string;
 }
