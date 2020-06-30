@@ -1,10 +1,17 @@
 import fs from 'fs';
 import csvParse from 'csv-parse';
-import { getCustomRepository } from 'typeorm';
+import { getCustomRepository, getRepository } from 'typeorm';
 import Transaction from '../models/Transaction';
-import TransactionsRepository from '../repositories/TransactionsRepository';
 import AppError from '../errors/AppError';
-import CreateTransactionService from './CreateTransactionService';
+import TransactionsRepository from '../repositories/TransactionsRepository';
+import Category from '../models/Category';
+
+interface Item {
+  title: string;
+  type: 'outcome' | 'income';
+  value: number;
+  category: string;
+}
 
 class ImportTransactionsService {
   async execute(path: string): Promise<Transaction[]> {
@@ -12,18 +19,32 @@ class ImportTransactionsService {
       throw new AppError('Only accepts .csv files');
     }
     const data = await this.readCsv(path);
-    const createTransactionService = new CreateTransactionService();
+    const transactionRepository = getCustomRepository(TransactionsRepository);
+    const categoryRepository = getRepository(Category);
 
     const transactions = await Promise.all(
       data.map(
-        async (item): Promise<Transaction> => {
-          const [title, type, value, category] = item;
-          const transaction = await createTransactionService.execute({
+        async (item: Item): Promise<Transaction> => {
+          const { title, type, value, category } = item;
+
+          let newCategory = await categoryRepository.findOne({
+            where: { title: category },
+          });
+
+          if (!newCategory) {
+            newCategory = categoryRepository.create({ title: category });
+            await categoryRepository.save(newCategory);
+          }
+
+          const transaction = transactionRepository.create({
             title,
             type,
-            value: Number(value),
-            category,
+            value,
+            category: newCategory,
+            category_id: newCategory.id,
           });
+
+          await transactionRepository.save(transaction);
           return transaction;
         },
       ),
@@ -32,7 +53,7 @@ class ImportTransactionsService {
     return transactions;
   }
 
-  private async readCsv(path: string): Promise<string[][]> {
+  private async readCsv(path: string): Promise<Item[]> {
     const readCsvStream = fs.createReadStream(path);
 
     const parseStream = csvParse({
@@ -43,10 +64,15 @@ class ImportTransactionsService {
 
     const parseCsv = readCsvStream.pipe(parseStream);
 
-    const lines: string[][] = [];
+    const lines: Item[] = [];
 
     parseCsv.on('data', (line: string[]) => {
-      lines.push(line);
+      lines.push({
+        title: line[0],
+        type: line[1] === 'income' ? 'income' : 'outcome',
+        value: Number(line[2]),
+        category: line[3],
+      });
     });
 
     await new Promise(resolve => {

@@ -29,9 +29,9 @@ class CreateTransactionService {
       );
     }
 
-    const balance = await transactionRepository.getBalance();
+    const { total } = await transactionRepository.getBalance();
 
-    if (type === 'outcome' && Number(value) > balance.total) {
+    if (type === 'outcome' && Number(value) > total) {
       throw new AppError('There is no available balance to this outcome');
     }
 

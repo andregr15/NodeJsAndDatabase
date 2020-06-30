@@ -64,5 +64,3 @@ or
 
 npm run test
 ```
-
-
