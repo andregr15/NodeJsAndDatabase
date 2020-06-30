@@ -11,12 +11,12 @@ class DeleteTransactionService {
 
     const transactionsRepository = getCustomRepository(TransactionsRepository);
 
-    const transaction = await transactionsRepository.find({ id });
+    const transaction = await transactionsRepository.findOne(id);
     if (!transaction) {
       throw new AppError(`There is no transaction with the ID ${id}`, 404);
     }
 
-    await transactionsRepository.delete(transaction);
+    await transactionsRepository.delete(transaction.id);
   }
 }
 

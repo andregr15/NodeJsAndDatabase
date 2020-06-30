@@ -27,8 +27,8 @@ transactionsRouter.post('/', async (request, response) => {
 });
 
 transactionsRouter.delete('/:id', async (request, response) => {
-  new DeleteTransactionService().execute(request.params.id);
-  response.send();
+  await new DeleteTransactionService().execute(request.params.id);
+  response.status(204).send();
 });
 
 transactionsRouter.post('/import', async (request, response) => {
